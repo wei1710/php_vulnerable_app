@@ -7,6 +7,8 @@
  * @version 1.0.1 December 2024 Code convention updated
  */
 
+session_start();
+
 $conn = new mysqli('localhost', 'root', '', 'movies'); 
 
 if ($conn->connect_errno) {
@@ -17,26 +19,30 @@ if ($conn->connect_errno) {
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
         if ($_GET['action'] === 'get_movie' ) {
-            $sql = 'SELECT cName FROM movies WHERE nMovieID = ' . $_GET['movie_id'];
-            if (!$res = $conn->query($sql)) {
-                echo 'Query unsuccessful: ' . $sql;
-                die('Query unsuccessful: ' . $conn->error);
-            } else {
-                $movies = [];
-                while ($movie = $res->fetch_assoc())
-                    array_push($movies, $movie['cName']);
+            $stmt = $conn->prepare("SELECT cName FROM movies WHERE nMovieID = ?");
+            $stmt->bind_param('i', $_GET['movie_id']);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $movies = [];
+            while ($movies = $result->fetch_assoc()) {
+                $movies[] = $movie['cName'];
+            }
             echo json_encode($movies);
-        }
         break;
     }
     case 'POST':
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            die('CSRF token validation failed');
+        }
+
         if ($_POST['action'] === 'new_movie') {
-            $sql = 'INSERT INTO movies (cName) VALUES ("' . $_POST['movie_name'] . '")';
-            if (!$conn->query($sql)) {
-                echo 'Insert unsuccessful: ' . $sql;
+            $stmt = $conn->prepare('INSERT INTO movies (cNames) VALUES (?)');
+            $stmt->bind_param('s', $_POST['movie_name']);
+            if ($stmt->execute()) {
+                echo json_encode('Insert successful');
+            } else {
                 die('Insert unsuccessful: ' . $conn->error);
-            } else 
-            echo json_encode('Insert successful');
+            }
         }
         break;
 }

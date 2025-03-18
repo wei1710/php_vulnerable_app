@@ -48,7 +48,7 @@ $(function() {
     // Ok button clicked
     $('#frmName').submit(function(e) {
         e.preventDefault();
-        $('#divName').html('Your name is ' + $('#txtName').val());
+        $('#divName').text('Your name is ' + $('#txtName').val());
     });
 
     // Get movie by ID
@@ -68,12 +68,12 @@ $(function() {
                     console.log(movie);
                     
                     if (movie == '')
-                        $('#divMovie').html('No movie with this ID exists');
+                        $('#divMovie').text('No movie with this ID exists');
                     else
-                        $('#divMovie').html(movie);
+                        $('#divMovie').text(movie);
                 })
                 .fail(function() {
-                    $('#divMovie').html('There was an error while processing the request');
+                    $('#divMovie').text('There was an error while processing the request');
                 })
         } else {
             $.ajax({
@@ -85,10 +85,10 @@ $(function() {
                 }
             }).
             done(function(data) {
-                $('#divMovie').html(JSON.parse(data));
+                $('#divMovie').text(JSON.parse(data));
             })
             .fail(function() {
-                $('#divMovie').html('There was an error while trying to add the new movie');
+                $('#divMovie').text('There was an error while trying to add the new movie');
             })
         }
     });   

@@ -1,3 +1,22 @@
+<?php 
+session_start();
+header("Content-Security-Policy: default-src 'self'; script-src 'self' https://code.jquery.com");
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$token = $_SESSION['csrf_token'];
+
+$userName = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['txtName'])) {
+        $userName = $_POST['txtName'];
+    }
+}
+
+?>
+
 <!DOCTYPE html>
 <!--
     Vulnerable Web Application Example
@@ -26,14 +45,15 @@
                 <input type="text" id="txtName" maxlength="200">
             </div>               
             <div id="divName" class="outputDiv">
-                <p>Empty name</p>
+                <p><?php echo htmlspecialchars($userName, ENT_QUOTES, 'UTF-8'); ?></p>
             </div>
             <div>
                 <button type="submit">Show the text</button>
             </div>
         </fieldset>
     </form>            
-    <form id="frmMovie">
+    <form id="frmMovie" method="POST" action="src/api.php">
+        <input type="hidden" name="csrf_token" value="<?php echo $token; ?>">
         <fieldset>
             <div>
                 <input type="radio" id="optSearch" name="optMovie" value="search" checked>
